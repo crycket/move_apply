@@ -1,4 +1,5 @@
 import json
+import os
 import paramiko
 
 __author__ = 'crmocan'
@@ -8,17 +9,7 @@ __description__ = 'This script connects to server through ssh and executes a ser
 
 
 class SSH(object):
-    def __init__(self, settings, server, user, key_file, localpath, remotepath):
-        if settings:
-            with open(settings, 'r') as settings_file:
-                data = json.load(settings_file)
-                self.server = data['server']
-                self.user = data['user']
-                self.key_file = data['keyFile']
-                self.localpath = data['localPath']
-                self.remotepath = data['remotePath']
-            # TODO: Set variables from json file.
-            pass
+    def __init__(self, server=None, user=None, key_file=None, localpath=None, remotepath=None):
         self.server = server if server else 'esling43.emea.nsn-net.net'
         self.user = user if user else 'crmocan'
         self.key_file = key_file if key_file else 'C:/Users/crmocan/Desktop/id_rsa'
@@ -27,7 +18,8 @@ class SSH(object):
 
     def _connect_to_esling(self):
         client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # (paramiko.WarningPolicy())
+        client.load_host_keys(os.path.expanduser("~/.ssh/known_hosts"))
+        # client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # (paramiko.WarningPolicy())
         client.connect(self.server, username=self.user, key_filename=self.key_file)
         return client
 

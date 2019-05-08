@@ -17,6 +17,7 @@ def connect_to_esling():
 
 def send_command(command):
     client = connect_to_esling()
+    print("send_command: cmd", command)
     alldata = None
     if client:
         stdin, stdout, stderr = client.exec_command(command)
@@ -28,7 +29,7 @@ def send_command(command):
                 while prevdata:
                     prevdata = stdout.channel.recv(1024)
                     alldata += prevdata
-                print(str(alldata, "utf8"))
+                print("send_command: alldata", str(alldata, "utf8"))
     else:
         print("Connection not opened.")
     return alldata
@@ -37,7 +38,6 @@ def send_command(command):
 def put_diff(client, localpath, remotepath):
     s = client.open_sftp()
     s.put(localpath, remotepath)
-    # s.put('C:/Users/crmocan/Desktop/id_rsa', '/var/fpwork/crmocan/trunk_dem/dem/rsa_id')
     s.close()
 
 
@@ -53,7 +53,7 @@ def revert_and_remove(files: List[str]):
     summarize = ' '.join(summarize)
     results = send_command(cmd.format(summarize))
     if results is None:
-        print('Nothing to do')
+        print('revert_and_remove: Nothing to do')
         return
     sp = str(results, 'utf8').split()
     results = list(zip(sp[0::2], sp[1::2]))
@@ -67,16 +67,18 @@ def revert_and_remove(files: List[str]):
         elif status == 'M':
             revert = '{} {}'.format(revert, file_name)
     revertedres = send_command(cmd.format(revert))
-    print(revertedres)
+    if revertedres:
+        print('revert_and_remove: ', str(revertedres, 'utf8'))
     removedres = send_command(cmd.format(remove))
-    print(removedres)
+    if removedres:
+        print('revert_and_remove: ', str(removedres, 'utf8'))
 
 
 def apply_diff(file_name: str):
     cmd = 'cd /var/fpwork/crmocan/trunk_dem/dem && {}'
     patch = 'patch -p5 -i {}'.format(file_name)
     results = send_command(cmd.format(patch))
-    print(results)
+    print('apply_diff: ', results)
 
 
 def add_to_svn(files: List[str]):

@@ -1,8 +1,8 @@
-import src.move as sut
+import src.ssh as sut
 
 
 class TestSsh(object):
-    def test_connect_to_esling(self):
-        client = sut.connect_to_esling()
-        assert client is not None
-        client.close()
+    def test_init_ssh(self):
+        ssh = sut.SSH()
+        assert ssh is not None
+        ssh.send_command('ls')

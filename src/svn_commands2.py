@@ -1,3 +1,5 @@
+import os
+import pathlib
 import subprocess
 from typing import List
 
@@ -23,10 +25,12 @@ class SVN(object):
         :param path: str - Location of local repository.
         :param local: bool - Execute it locally or send it to remote.
         """
-        self._path = path
-        self._local = True if local is None else False
-        self._diff_name = 'patch.diff'
+        self._path = pathlib.Path(path)
         self._cmd = 'svn {} {}'
+        if local is None:
+            self._local = True
+            os.chdir(path)
+        self._diff_name = 'patch.diff'
         self.result = None
 
     def add(self, files: List[str]):
@@ -49,8 +53,9 @@ class SVN(object):
         """
         cmd = self._cmd.format('diff', ' '.join(files))
         if self._local:
-            with open('{}/{}'.format(self._path, self._diff_name)) as f:
-                f.write(self._run(cmd))
+            with open(str(self._path / self._diff_name)) as f:
+                self._run(cmd)
+                f.write(self.result)
         else:
             return cmd
 
@@ -83,7 +88,7 @@ class SVN(object):
         :param files: The summarized files.
         :return:
         """
-        cmd = self._cmd.format('di --summarize', self._path if files is None else files)
+        cmd = self._cmd.format('di --summarize', ' '.join(files) if files else '.' if self._local else str(self._path))
         if self._local:
             self._run(cmd)
             self.result = self.result.split()
