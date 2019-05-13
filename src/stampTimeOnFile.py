@@ -19,7 +19,7 @@ def stamp_time_on_file(file_name: str = 'timestamp') -> float:
     try:
         with open(file_name, 'x'):
             pass
-        f_timestamp = timestamp
+        # f_timestamp = timestamp
     except FileExistsError:
         with open(file_name, 'r') as f:
             f_timestamp = float(f.read())

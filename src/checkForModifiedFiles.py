@@ -12,9 +12,9 @@ def check_modified_files_against_timestamp(files: List[str], timestamp_file: str
     """
     The function will check the provided files, that are cpp/hpp/py, last modification date.
     And will return those that are newer than the timestamp.
-    :param files: List[str] - list of files to be checked
-    :param timestamp_file: str - list of files to be checked
-    :return: List[str] - list of files modified after timestamp
+    :param List[str] files: Files to be checked
+    :param str timestamp_file: Files to be checked
+    :return: List[str] - Files modified after timestamp
     """
     m_files = []
     if timestamp_file is None:

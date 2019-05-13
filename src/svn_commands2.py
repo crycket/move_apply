@@ -20,15 +20,15 @@ class SVNException(Exception):
 
 
 class SVN(object):
-    def __init__(self, path: str, local: bool = None):
+    def __init__(self, path: str, local: bool = True):
         """
         :param path: str - Location of local repository.
         :param local: bool - Execute it locally or send it to remote.
         """
-        self._path = pathlib.Path(path)
+        self._path = path
         self._cmd = 'svn {} {}'
-        if local is None:
-            self._local = True
+        self._local = local
+        if local:
             os.chdir(path)
         self._diff_name = 'patch.diff'
         self.result = None
@@ -45,7 +45,7 @@ class SVN(object):
         else:
             return cmd
 
-    def diff_to_file(self, files: List[str] = '.'):
+    def diff_to_file(self, files: List[str]):
         """
         svn diff files
         :param files: The diffed files.
@@ -53,9 +53,15 @@ class SVN(object):
         """
         cmd = self._cmd.format('diff', ' '.join(files))
         if self._local:
-            with open(str(self._path / self._diff_name)) as f:
+            patch = '{}/{}'.format(self._path, self._diff_name)
+            with open(patch, 'w') as f:
                 self._run(cmd)
                 f.write(self.result)
+            # Replace windows endings to unix
+            with open(patch, 'rb') as f:
+                content = f.read().replace(b'\r\n', b'\n')
+            with open(patch, 'wb') as f:
+                f.write(content)
         else:
             return cmd
 
@@ -88,10 +94,11 @@ class SVN(object):
         :param files: The summarized files.
         :return:
         """
-        cmd = self._cmd.format('di --summarize', ' '.join(files) if files else '.' if self._local else str(self._path))
+        if files is None:
+            files = ['']
+        cmd = self._cmd.format('di --summarize', ' '.join(files))
         if self._local:
             self._run(cmd)
-            self.result = self.result.split()
         else:
             return cmd
 
@@ -102,7 +109,7 @@ class SVN(object):
         :param cmd: the svn cmd to be run
         :return:
         """
-        process = subprocess.run(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        process = subprocess.run(cmd, capture_output=True, text=True)
         if process.stderr:
             print(process.stdout)
             raise SVNException(process.stderr)

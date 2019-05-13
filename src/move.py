@@ -48,6 +48,7 @@ def revert_and_remove(files: List[str]):
     :return: None
     """
     cmd = 'cd /var/fpwork/crmocan/trunk_dem/dem && {}'
+    print('revert_and_remove: files ', files)
     summarize = files[::]
     summarize.insert(0, 'svn di --summarize')
     summarize = ' '.join(summarize)

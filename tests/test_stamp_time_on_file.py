@@ -14,7 +14,7 @@ class TestStampTimeOnFile(object):
             f.write(str(iso_timestamp))
         assert sut.stamp_time_on_file(tmpdir / file_name) == iso_timestamp
         with open(tmpdir / file_name, 'r') as f:
-            assert f.read() != iso_timestamp
+            assert float(f.read()) != iso_timestamp
 
     def test_file_exists_and_has_no_iso_timestamp(self, tmpdir):
         """
@@ -27,7 +27,7 @@ class TestStampTimeOnFile(object):
         iso_timestamp = sut.stamp_time_on_file(tmpdir / file_name)
         assert not iso_timestamp
         with open(tmpdir / file_name, 'r') as f:
-            assert f.read() != iso_timestamp
+            assert float(f.read()) != iso_timestamp
 
     def test_file_exists_and_has_gibberish(self, tmpdir):
         """
@@ -40,7 +40,7 @@ class TestStampTimeOnFile(object):
         iso_timestamp = sut.stamp_time_on_file(tmpdir / file_name)
         assert not iso_timestamp
         with open(tmpdir / file_name, 'r') as f:
-            assert f.read() != iso_timestamp
+            assert float(f.read()) != iso_timestamp
 
     def test_no_file_exists(self, tmpdir):
         """
@@ -53,5 +53,4 @@ class TestStampTimeOnFile(object):
                 pass
         iso_timestamp = sut.stamp_time_on_file(tmpdir / file_name)
         with open(tmpdir / file_name, 'r') as f:
-            timestamp = f.read()
-            assert timestamp != iso_timestamp
+            assert float(f.read()) != iso_timestamp

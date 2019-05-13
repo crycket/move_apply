@@ -14,12 +14,12 @@ def svn_di_summarize(path: str) -> List[str]:
     :param path: str - the svn directory
     :return:
     """
-    cmd = 'svn di '
+    cmd = 'svn di --summarize '
     if path:
         cmd += str(path)
     else:
         cmd += '.'
-    process = subprocess.run(cmd + ' --summarize', stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    process = subprocess.run(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     stdout = process.stdout.split()  # [1::2]
     return stdout
 
