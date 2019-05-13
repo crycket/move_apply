@@ -33,58 +33,38 @@ class SSH(object):
         if client:
             stdin, stdout, stderr = client.exec_command(cmd)
 
-            def _receive(output):
+            def recv_data(channel_file: paramiko.channel.ChannelFile, is_err: bool = False) -> str:
                 alldata = None
-                while not output.channel.exit_status_ready():
+                if is_err:
+                    ready = channel_file.channel.recv_stderr_ready
+                    recv = channel_file.channel.recv_stderr
+                else:
+                    ready = channel_file.channel.recv_ready
+                    recv = channel_file.channel.recv
+                while not channel_file.channel.exit_status_ready():
                     # Print data when available
-                    if output.channel.recv_ready():
-                        alldata = output.channel.recv(1024*4)
+                    if ready():
+                        alldata = recv(1024*4)
                         prevdata = b"1"
                         while prevdata:
-                            prevdata = output.channel.recv(1024*4)
-                            alldata += prevdata
-                if alldata:
-                    alldata = str(alldata, 'utf8')
-                return alldata
-
-            def receive_err(err_out):
-                alldata = None
-                while not err_out.channel.exit_status_ready():
-                    # Print data when available
-                    if err_out.channel.recv_stderr_ready():
-                        alldata = err_out.channel.recv_stderr(1024*4)
-                        prevdata = b"1"
-                        while prevdata:
-                            prevdata = err_out.channel.recv_stderr(1024*4)
+                            prevdata = recv(1024*4)
                             alldata += prevdata
                 if alldata:
                     alldata = str(alldata, 'utf8')
                 return alldata
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-                # Start the load operations and mark each future with its URL
-                future_err = executor.submit(receive_err, stderr)
+                future_err = executor.submit(recv_data, stderr)
                 # future_out_err = executor.submit(_receive, stderr)
-                future_out = executor.submit(_receive, stdout)
+                future_out = executor.submit(recv_data, stdout)
                 out = future_out.result()
                 print('out: ', out)
                 # out_err = future_out_err.result()
                 # print('out: ', out_err)
                 err = future_err.result()
                 print('err: ', err)
-            # while not stdout.channel.exit_status_ready():
-            #     # Print data when available
-            #     if stdout.channel.recv_ready():
-            #         alldata = stdout.channel.recv(1024)
-            #         prevdata = b"1"
-            #         while prevdata:
-            #             prevdata = stdout.channel.recv(1024)
-            #             alldata += prevdata
-            #         print(str(alldata, "utf8"))
         else:
             print('Connection not opened.')
-        # if alldata is not None:
-        #     alldata = str(alldata, 'utf8')
         return out
 
     def send_file(self, file_name: str):
