@@ -1,7 +1,7 @@
 {
     "user": "crmocan",
     "key_file": "C:/Users/crmocan/Desktop/id_rsa",
-    "server": "esling43.emea.nsn-net.net",
+    "host": "esling43.emea.nsn-net.net",
     "local_path": "C:/Users/crmocan/Desktop/svn",
     "remote_path": "/var/fpwork/crmocan/trunk_dem/dem"
 }

@@ -1,11 +1,10 @@
 import os
-import pathlib
 import subprocess
 from typing import List
 
 
 __author__ = 'crmocan'
-__date__ = '2019-05-06'
+__date__ = '2019-05-16'
 __version__ = 0.02
 __description__ = ''
 
@@ -30,6 +29,8 @@ class SVN(object):
         self._local = local
         if local:
             os.chdir(path)
+        else:
+            self._cmd = 'cd {} && {}'.format(path, self._cmd)
         self._diff_name = 'patch.diff'
         self.result = None
 
@@ -96,7 +97,7 @@ class SVN(object):
         """
         if files is None:
             files = ['']
-        cmd = self._cmd.format('di --summarize', ' '.join(files))
+        cmd = self._cmd.format('diff --summarize', ' '.join(files))
         if self._local:
             self._run(cmd)
         else:

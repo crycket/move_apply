@@ -3,4 +3,4 @@
 
 from setuptools import setup, find_packages
 
-setup(name="move_apply", packages=find_packages('src'), install_requires=['paramiko', 'pytest'])
+setup(name="move_apply", packages=find_packages('src'), install_requires=['fabric2', 'pytest'])

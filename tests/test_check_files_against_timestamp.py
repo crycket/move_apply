@@ -1,5 +1,9 @@
-import src.stampTimeOnFile as sut
+from time import sleep
+
 import pytest
+
+import src.check_files as sut
+from tests.helper import add_files
 
 
 class TestStampTimeOnFile(object):
@@ -54,3 +58,50 @@ class TestStampTimeOnFile(object):
         iso_timestamp = sut.stamp_time_on_file(tmpdir / file_name)
         with open(tmpdir / file_name, 'r') as f:
             assert float(f.read()) != iso_timestamp
+
+
+class TestCheckFilesAgainstTimestamp(object):
+    """
+    add_files:
+    tmpdir/a.cpp
+          /b.hpp
+          /c.py
+    """
+    def test_all_new_files_no_timestamp_file(self, tmpdir):
+        files = dict(zip(add_files(tmpdir), ['A', 'A', 'A']))
+        assert sut.check_files_against_timestamp(files, tmpdir / 'timestamp') == files
+
+    def test_all_new_files_and_timestamp_file(self, tmpdir):
+        files = dict(zip(add_files(tmpdir), ['A', 'A', 'A']))
+        timestamp_file = str(tmpdir / 'timestamp')
+        with open(timestamp_file, 'w') as f:
+            f.write('1.0')
+        assert sut.check_files_against_timestamp(files, timestamp_file) == files
+
+    def test_some_new_files_and_timestamp_file(self, tmpdir):
+        files = dict(zip(add_files(tmpdir), ['A', 'A', 'A']))
+        timestamp_file = str(tmpdir / 'timestamp')
+        sut.stamp_time_on_file(timestamp_file)
+        sleep(0.001)
+        old_file = None
+        for i, file in enumerate(files.keys()):
+            if i == 2:
+                old_file = file
+                continue
+            with open(file, 'a') as f:
+                f.write('something new')
+        del files[old_file]
+        assert sut.check_files_against_timestamp(files, timestamp_file) == files
+
+    def test_no_new_files_and_timestamp_file(self, tmpdir):
+        files = dict(zip(add_files(tmpdir), ['A', 'A', 'A']))
+        timestamp_file = str(tmpdir / 'timestamp')
+        sut.stamp_time_on_file(timestamp_file)
+        assert sut.check_files_against_timestamp(files, timestamp_file) == dict()
+
+    def test_no_new_files_and_deleted_file(self, tmpdir):
+        files = dict(zip(add_files(tmpdir), ['A', 'A', 'A']))
+        files[str(tmpdir / 'd.cpp')] = 'D'
+        timestamp_file = str(tmpdir / 'timestamp')
+        sut.stamp_time_on_file(timestamp_file)
+        assert sut.check_files_against_timestamp(files, timestamp_file) == {str(tmpdir / 'd.cpp'): 'D'}

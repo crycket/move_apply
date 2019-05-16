@@ -1,5 +1,5 @@
-from time import sleep
 from os import remove
+from time import sleep
 
 
 def add_files(checkout_dir):

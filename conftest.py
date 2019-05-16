@@ -1,26 +1,27 @@
 import os
-import pytest
 import shutil
 import stat
 import subprocess
 import time
 
+import pytest
+
 
 @pytest.fixture(scope="session")
 def checkout_dir(tmp_path_factory):
-    svn_repo_ = tmp_path_factory.mktemp('svn_repo')
-    checkout_ = tmp_path_factory.getbasetemp() / 'rep'
-    subprocess.run('svnadmin create ' + str(svn_repo_), shell=True)
-    cmd = ''.join(['svn co ', svn_repo_.as_uri(), ' ', str(checkout_)])
+    svn_repo = tmp_path_factory.mktemp('svn_repo')
+    checkout = tmp_path_factory.getbasetemp() / 'rep'
+    subprocess.run('svnadmin create ' + str(svn_repo), shell=True)
+    cmd = ''.join(['svn co ', svn_repo.as_uri(), ' ', str(checkout)])
     subprocess.run(cmd, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, shell=True)
-    yield checkout_
+    yield checkout
 
     def remove_readonly(func, path, _):
         """Clear the readonly bit and reattempt the removal"""
         os.chmod(path, stat.S_IWRITE)
         func(path)
-    shutil.rmtree(svn_repo_, onerror=remove_readonly)
-    shutil.rmtree(checkout_, onerror=remove_readonly)
+    shutil.rmtree(svn_repo, onerror=remove_readonly)
+    shutil.rmtree(checkout, onerror=remove_readonly)
 
 
 @pytest.fixture(scope='function')
