@@ -13,7 +13,8 @@ class SVNException(Exception):
     """
     Exception raised when svn has unexpected behavior.
     """
-    def __init__(self, message):
+    def __init__(self, cmd, message):
+        self.cmd = cmd
         self.message = message
         print(self.message)
 
@@ -29,8 +30,6 @@ class SVN(object):
         self._local = local
         if local:
             os.chdir(path)
-        else:
-            self._cmd = 'cd {} && {}'.format(path, self._cmd)
         self._diff_name = 'patch.diff'
         self.result = None
 
@@ -113,6 +112,6 @@ class SVN(object):
         process = subprocess.run(cmd, capture_output=True, text=True)
         if process.stderr:
             print(process.stdout)
-            raise SVNException(process.stderr)
+            raise SVNException(cmd, process.stderr)
         else:
             self.result = process.stdout

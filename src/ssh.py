@@ -18,9 +18,9 @@ class SSH(object):
         self._connection = Connection(host=self.host, user=self.user, connect_kwargs={'key_filename': self.key_file})
 
     def send_command(self, cmd: str) -> str:
-        print('cmd: ', cmd)
         cmd = 'cd {} && {}'.format(self.remotepath, cmd)
-        result = self._connection.run(cmd)#, hide='both')
+        print('cmd: ', cmd)
+        result = self._connection.run(cmd)  # , hide='both')
         return result.stdout
 
     def send_file(self, file_name: str):

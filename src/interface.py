@@ -2,27 +2,26 @@ import pathlib
 
 import src.ssh as ssh
 import src.svn as svn
+from src.check_files import CheckFilesTimestamp
 
 
-def start(settings):
-    # import json
-    # settings_path = r'C:\Users\crmocan\Desktop\pyBuildforSublime\move_apply\.localsettings.json'
-    # f = open(settings_path, 'r')
-    # settings = json.load(f)
-    # if settings is None:
-    #     print('Settings are empty')
-    #     return
-    local_svn = svn.SVN(path=settings['local_path'], local=True)
-    local_svn.summarize()
+def create_patch(path: str, cft: CheckFilesTimestamp):
+    local_svn = svn.SVN(path=path, local=True)
+    try:
+        local_svn.summarize()
+    except svn.SVNException as e:
+        return
     results = local_svn.result.split()
     files = dict(zip(results[1::2], results[0::2]))
-    from src.check_files import check_files_against_timestamp
-    files = check_files_against_timestamp(files)
+    files = cft.check_files_against_timestamp(files)
     if not files:
         print('No changes to send')
         return
     local_svn.diff_to_file(list(files.keys()))
 
+
+def start(settings):
+    cft = CheckFilesTimestamp()
     # Remote work
     ssh_client = ssh.SSH(**settings)
     # send diff to esling
