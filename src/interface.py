@@ -18,15 +18,16 @@ def create_patch(path: str, cft: CheckFilesTimestamp):
         print('No changes to send')
         return
     local_svn.diff_to_file(list(files.keys()))
+    return files
 
 
 def start(settings):
     cft = CheckFilesTimestamp()
+    files = create_patch(settings['local_path'], cft)
     # Remote work
     ssh_client = ssh.SSH(**settings)
     # send diff to esling
-    ssh_client.send_file('patch.diff')
-
+    ssh_client.send_file('modiff.diff')
     remote_svn = svn.SVN(path=settings['remote_path'], local=False)
     files = {pathlib.PurePath(file).as_posix(): files[file] for file in files.keys()}
     print(files)
@@ -34,6 +35,7 @@ def start(settings):
     if results is None:
         print('No remote modifications. Apply patch.')
         ssh_client.send_command(remote_svn.patch())
+        return
     else:
         results = results.split()
         results = dict(zip(results[1::2], results[0::2]))
@@ -48,10 +50,8 @@ def start(settings):
             if files[file].startswith(('M', 'D')):
                 reverted_files.append(file)
         if reverted_files:
-            pass
             ssh_client.send_command(remote_svn.revert(reverted_files))
         if removed_files:
-            pass
             ssh_client.delete_files(removed_files)
 
     # Patch

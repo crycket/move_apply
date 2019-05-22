@@ -49,3 +49,8 @@ class TestSvnRemote(object):
         cd = 'cd {}'.format(path)
         svn_cmd = 'svn {} {}'.format(cmd_str, ' '.join(files))
         assert cmd(svn, files) == '{} && {}'.format(cd, svn_cmd)
+
+    def test_diff(self):
+        path = 'cd /var/fpwork/crmocan/trunk_dem/dem'
+        svn = sut.SVN(path=path, local=False)
+        print(svn.diff_to_file([]))

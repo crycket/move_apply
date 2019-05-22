@@ -31,6 +31,7 @@ class SVN(object):
         if local:
             os.chdir(path)
         self._diff_name = 'patch.diff'
+        self.modiff = 'modiff.diff'
         self.result = None
 
     def add(self, files: List[str]):
@@ -53,7 +54,9 @@ class SVN(object):
         """
         cmd = self._cmd.format('diff', ' '.join(files))
         if self._local:
-            patch = '{}/{}'.format(self._path, self._diff_name)
+            # As backup do full diff.
+            self._full_diff()
+            patch = '{}/{}'.format(self._path, self.modiff)
             with open(patch, 'w') as f:
                 self._run(cmd)
                 f.write(self.result)
@@ -70,7 +73,7 @@ class SVN(object):
         svn patch diff_file
         :return:
         """
-        cmd = self._cmd.format('patch', self._diff_name)
+        cmd = self._cmd.format('patch', self.modiff)
         if self._local:
             self._run(cmd)
         else:
@@ -101,6 +104,18 @@ class SVN(object):
             self._run(cmd)
         else:
             return cmd
+
+    def _full_diff(self):
+        cmd = self._cmd.format('diff', '')
+        patch = '{}/{}'.format(self._path, self._diff_name)
+        with open(patch, 'w') as f:
+            self._run(cmd)
+            f.write(self.result)
+        # Replace windows endings to unix
+        with open(patch, 'rb') as f:
+            content = f.read().replace(b'\r\n', b'\n')
+        with open(patch, 'wb') as f:
+            f.write(content)
 
     def _run(self, cmd: str):
         """
