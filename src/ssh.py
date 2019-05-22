@@ -31,8 +31,7 @@ class SSH(object):
         """
         local = '{}/{}'.format(self.localpath, file_name)
         remote = '{}/{}'.format(self.remotepath, file_name)
-        result = self._connection.put(local, remote)
-        # return result
+        self._connection.put(local, remote)
 
     def delete_files(self, files: List[str]) -> str:
         """

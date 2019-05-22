@@ -2,9 +2,13 @@ import os
 from datetime import datetime as dt
 
 __author__ = 'crmocan'
-__date__ = '2019-05-14'
-__version__ = 0.02
+__date__ = '2019-05-17'
+__version__ = 0.03
 __description__ = 'Check for newly added, modified and deleted source files and statuses. Return a dict with them'
+
+
+class RevertTimestamp(Exception):
+    pass
 
 
 class CheckFilesTimestamp(object):

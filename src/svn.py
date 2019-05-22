@@ -16,7 +16,7 @@ class SVNException(Exception):
     def __init__(self, cmd, message):
         self.cmd = cmd
         self.message = message
-        print(self.message)
+        print('{}\n{}'.format(self.cmd, self.message))
 
 
 class SVN(object):
