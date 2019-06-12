@@ -28,7 +28,7 @@ class CheckFilesTimestamp(object):
         """
         with open(self.file_name, 'wb') as f:
             f.write(str(self.old_time).encode('utf8'))
-        print('{} file reverted to old time.'.format(self.file_name))
+        print('{} file reverted to old time {}.'.format(self.file_name, self.old_time))
 
     def check_files_against_timestamp(self, files: dict) -> dict:
         """
@@ -53,8 +53,6 @@ class CheckFilesTimestamp(object):
             # Adding deleted file to dict.
             elif files[file].startswith('D'):
                 m_files[file] = files[file]
-        if not m_files:
-            self.revert_to_old_time()
         return m_files
 
     def _stamp_time_on_file(self) -> float:

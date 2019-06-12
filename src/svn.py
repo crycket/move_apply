@@ -28,11 +28,17 @@ class SVN(object):
         self._path = path
         self._cmd = 'svn {} {}'
         self._local = local
+        self._cwd = None
         if local:
+            self._cwd = os.getcwd()
             os.chdir(path)
         self._diff_name = 'patch.diff'
         self.modiff = 'modiff.diff'
         self.result = None
+
+    def __del__(self):
+        if self._cwd is not None:
+            os.chdir(self._cwd)
 
     def add(self, files: List[str]):
         """
@@ -46,17 +52,20 @@ class SVN(object):
         else:
             return cmd
 
-    def diff_to_file(self, files: List[str]):
+    def diff_to_file(self, files: List[str], diff_name: str = None):
         """
         svn diff files
         :param files: The diffed files.
+        :param diff_name: diff name
         :return:
         """
         cmd = self._cmd.format('diff', ' '.join(files))
         if self._local:
             # As backup do full diff.
-            self._full_diff()
-            patch = '{}/{}'.format(self._path, self.modiff)
+            if diff_name is None:
+                self.diff_to_file([], self._diff_name)
+                diff_name = self.modiff
+            patch = '{}/{}'.format(self._path, diff_name)
             with open(patch, 'w') as f:
                 self._run(cmd)
                 f.write(self.result)
@@ -105,18 +114,6 @@ class SVN(object):
         else:
             return cmd
 
-    def _full_diff(self):
-        cmd = self._cmd.format('diff', '')
-        patch = '{}/{}'.format(self._path, self._diff_name)
-        with open(patch, 'w') as f:
-            self._run(cmd)
-            f.write(self.result)
-        # Replace windows endings to unix
-        with open(patch, 'rb') as f:
-            content = f.read().replace(b'\r\n', b'\n')
-        with open(patch, 'wb') as f:
-            f.write(content)
-
     def _run(self, cmd: str):
         """
         Runs the svn commands locally and fill result with the output.
@@ -126,7 +123,7 @@ class SVN(object):
         """
         process = subprocess.run(cmd, capture_output=True, text=True)
         if process.stderr:
-            print(process.stdout)
+            self.result = process.stdout
             raise SVNException(cmd, process.stderr)
         else:
             self.result = process.stdout

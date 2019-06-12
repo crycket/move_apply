@@ -9,9 +9,9 @@ class TestSvnLocal(object):
         New files added to directory but not under version control.
         Summarize should return empty.
         """
-        svn = sut.SVN(path=checkout_dir, local=True)
-        svn.summarize(checkout_dir)
-        assert svn.result == []
+        svn = sut.SVN(path=str(checkout_dir), local=True)
+        svn.summarize([])
+        assert svn.result == ''
 
     def test_summarize_with_new_versioned_files(self, checkout_dir, files_to_check, svn_add):
         """
@@ -46,11 +46,10 @@ class TestSvnRemote(object):
         path = 'cd /var/fpwork/crmocan/trunk_dem/dem'
         svn = sut.SVN(path=path, local=False)
         files = ['a.cpp', 'b.hpp', 'c.py']
-        cd = 'cd {}'.format(path)
         svn_cmd = 'svn {} {}'.format(cmd_str, ' '.join(files))
-        assert cmd(svn, files) == '{} && {}'.format(cd, svn_cmd)
+        assert cmd(svn, files) == svn_cmd
 
     def test_diff(self):
         path = 'cd /var/fpwork/crmocan/trunk_dem/dem'
         svn = sut.SVN(path=path, local=False)
-        print(svn.diff_to_file([]))
+        assert svn.diff_to_file([]) == 'svn diff '

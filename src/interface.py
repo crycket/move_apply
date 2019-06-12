@@ -1,4 +1,5 @@
 import pathlib
+from socket import gaierror
 
 import src.ssh as ssh
 import src.svn as svn
@@ -15,7 +16,7 @@ def create_patch(path: str, cft: CheckFilesTimestamp):
     files = dict(zip(results[1::2], results[0::2]))
     files = cft.check_files_against_timestamp(files)
     if not files:
-        raise RevertTimestamp('No changes to send')
+        raise RevertTimestamp('create_patch: No changes to send')
     local_svn.diff_to_file(list(files.keys()))
     return files
 
@@ -52,10 +53,15 @@ def apply_patch(settings, remote_path, files):
     ssh_client.send_command(remote_svn.patch())
 
 
-def start(settings):
+def start(settings, command):
+    print(command)
     cft = CheckFilesTimestamp()
     try:
         files = create_patch(settings['local_path'], cft)
         apply_patch(settings, settings['remote_path'], files)
-    except RevertTimestamp:
+    except RevertTimestamp as e:
+        print(e)
+        cft.revert_to_old_time()
+    except gaierror as e:
+        print(e)
         cft.revert_to_old_time()
